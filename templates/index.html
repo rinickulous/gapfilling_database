@@ -32,18 +32,16 @@
         .table-container {
             max-width: 100%;
             /* Takes width of parent */
-            overflow-x: auto;
-            /* Enables horizontal scroll if content overflows */
+            overflow-x: scroll;
+            /* ALWAYS SHOW HORIZONTAL SCROLLBAR */
             -webkit-overflow-scrolling: touch;
             /* Smooth scrolling on iOS */
+            /* Add a minimum height to ensure scrollbar space is visible */
+            min-height: 100px;
+            /* Adjust as needed */
+            /* Optional: Add some padding at the bottom for scrollbar space */
+            padding-bottom: 15px;
         }
-
-        /*
-         REMOVED the entire '@media (max-width: 768px)' block
-         that previously hid the thead and restyled the td elements
-         for responsive view. The table will now always render in
-         its default tabular layout.
-        */
 
         /* Status message styling */
         .status-message {
@@ -119,7 +117,7 @@
 
                 {% if search_results %}
                 <div class="mx-auto mb-12">
-                    <div class="table-container shadow border-b border-gray-200 sm:rounded-lg overflow-hidden">
+                    <div class="table-container shadow border-b border-gray-200 sm:rounded-lg">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-100">
                                 <tr>
