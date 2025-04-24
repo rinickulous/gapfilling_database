@@ -19,70 +19,56 @@
                         'error-bg': '#FECACA', // Red 200
                         'error-text': '#991B1B', // Red 800
                         'error-border': '#F87171', // Red 400
+                        'success-bg': '#D1FAE5', // Green 100
+                        'success-text': '#065F46', // Green 800
+                        'success-border': '#6EE7B7', // Green 300
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Style for table horizontal scroll on smaller screens */
+        /* Style for table horizontal scroll */
         .table-container {
             max-width: 100%;
+            /* Takes width of parent */
             overflow-x: auto;
+            /* Enables horizontal scroll if content overflows */
             -webkit-overflow-scrolling: touch;
             /* Smooth scrolling on iOS */
         }
 
-        /* Basic responsive table behavior */
-        @media (max-width: 768px) {
-            .table-container table thead {
-                display: none;
-                /* Hide headers on small screens */
-            }
+        /*
+         REMOVED the entire '@media (max-width: 768px)' block
+         that previously hid the thead and restyled the td elements
+         for responsive view. The table will now always render in
+         its default tabular layout.
+        */
 
-            .table-container table tbody,
-            .table-container table tr,
-            .table-container table td {
-                display: block;
-                width: 100%;
-            }
+        /* Status message styling */
+        .status-message {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            border-width: 1px;
+            margin-bottom: 1rem;
+        }
 
-            .table-container table tr {
-                margin-bottom: 1rem;
-                border: 1px solid #e5e7eb;
-                /* Light gray border */
-                border-radius: 0.375rem;
-                /* Rounded corners */
-                overflow: hidden;
-            }
+        .status-success {
+            background-color: theme('colors.success-bg');
+            border-color: theme('colors.success-border');
+            color: theme('colors.success-text');
+        }
 
-            .table-container table td {
-                text-align: right;
-                /* Align value to the right */
-                padding-left: 50%;
-                /* Make space for label */
-                position: relative;
-                border-bottom: 1px solid #e5e7eb;
-            }
+        .status-error {
+            background-color: theme('colors.error-bg');
+            border-color: theme('colors.error-border');
+            color: theme('colors.error-text');
+        }
 
-            .table-container table td::before {
-                content: attr(data-label);
-                /* Use data-label for the header */
-                position: absolute;
-                left: 0.75rem;
-                /* padding */
-                width: 45%;
-                padding-right: 0.75rem;
-                font-weight: 600;
-                /* Make label bold */
-                text-align: left;
-                white-space: nowrap;
-            }
-
-            .table-container table td:last-child {
-                border-bottom: 0;
-                /* Remove border from last cell in block */
-            }
+        .status-loading {
+            background-color: #E0E7FF;
+            border-color: #A5B4FC;
+            color: #3730A3;
         }
     </style>
 </head>
@@ -113,87 +99,91 @@
                 </form>
 
                 <p class="text-lg max-w-3xl mx-auto text-center text-gray-600 mb-12">
-                    A unified platform for genome-scale metabolic models.
-                    Search models or upload new XMLs below.
+                    A unified platform for genome-scale metabolic models. Search models or upload new XMLs below.
                 </p>
 
                 {% if error_message %}
-                <div class="max-w-4xl mx-auto mb-8 p-4 border-l-4 border-error-border bg-error-bg text-error-text rounded-r-md"
-                    role="alert">
+                <div class="max-w-4xl mx-auto mb-8 status-message status-error" role="alert">
                     <p class="font-bold">Error</p>
                     <p>{{ error_message }}</p>
                 </div>
                 {% endif %}
 
                 <h2 class="text-2xl md:text-3xl font-bold text-center mt-12 mb-8 text-slate-900">
-                    {% if media_search is not none %} {# Check if search was performed #}
+                    {% if media_search is not none %}
                     Results for “{{ media_search }}”
-                    {% else %}
-                    Available Models
+                    {% elif media_search is none %}
+                    Available Models (Latest First)
                     {% endif %}
                 </h2>
 
                 {% if search_results %}
-                <div
-                    class="table-container max-w-6xl mx-auto mb-12 shadow border-b border-gray-200 sm:rounded-lg overflow-hidden">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                {# Dynamically generate headers from the first result's keys #}
-                                {% if search_results[0] %}
-                                {% for col in search_results[0].keys() %}
-                                <th scope="col"
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                    {{ col.replace('_',' ')|title }}
-                                </th>
-                                {% endfor %}
-                                {% endif %}
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            {% for row in search_results %}
-                            <tr>
-                                {% for key, val in row.items() %}
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800"
-                                    data-label="{{ key.replace('_',' ')|title }}">
-                                    {% if key == 'file_link' and val %}
-                                    <a href="{{ val }}" target="_blank" rel="noopener noreferrer"
-                                        class="text-accent underline hover:text-accent-hover break-all">
-                                        {{ row.get('file_name', 'Download') }} {# Use file_name if available #}
-                                    </a>
-                                    {% elif val is none or val == '' %}
-                                    <span class="text-gray-400">N/A</span>
+                <div class="mx-auto mb-12">
+                    <div class="table-container shadow border-b border-gray-200 sm:rounded-lg overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    {% if search_results[0] %}
+                                    {% for col in search_results[0].keys() %}
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                        {{ col.replace('_',' ')|title }}
+                                    </th>
+                                    {% endfor %}
                                     {% else %}
-                                    {{ val }}
+                                    <th scope="col"
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                                        Data</th>
                                     {% endif %}
-                                </td>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for row in search_results %}
+                                <tr>
+                                    {% for key, val in row.items() %}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800"
+                                        data-label="{{ key.replace('_',' ')|title }}">
+                                        {# Link rendering logic - Stays the same #}
+                                        {% if key == 'file_link' and val %}
+                                        <a href="{{ val }}" target="_blank" rel="noopener noreferrer"
+                                            class="text-accent underline hover:text-accent-hover break-all">
+                                            {{ row.get('file_name', 'Download') }}
+                                        </a>
+                                        {% elif key == 'file_name' %}
+                                        {{ val }}
+                                        {% elif val is none or val == '' %}
+                                        <span class="text-gray-400">N/A</span>
+                                        {% else %}
+                                        {{ val }}
+                                        {% endif %}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
                                 {% endfor %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 {% elif media_search is not none %}
                 <p class="text-center text-gray-600 mt-8">No models found matching “{{ media_search }}”.</p>
                 {% else %}
-                <p class="text-center text-gray-600 mt-8">No models currently in the database.</p>
+                <p class="text-center text-gray-600 mt-8">No models currently in the database. Use the form below to
+                    upload one.</p>
                 {% endif %}
 
 
                 <h2 class="text-2xl md:text-3xl font-bold text-center mt-16 mb-8 text-slate-900">
                     Upload New Model
                 </h2>
-                {# Display upload status messages here #}
                 <div id="uploadStatus" class="max-w-xl mx-auto mb-4 text-center" role="alert"></div>
 
                 <form id="gapfillForm" enctype="multipart/form-data"
                     class="max-w-xl mx-auto mb-12 bg-white p-6 md:p-8 rounded-lg shadow-md space-y-6 border border-gray-200">
                     <div>
                         <label for="xmlUpload" class="block text-sm font-medium text-gray-700 mb-1">Choose XML file *
-                            <span class="text-xs text-gray-500">(Allowed: .xml)</span></label>
-                        <input type="file" id="xmlUpload" name="xmlUpload" accept=".xml"
-                            class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent-hover"
-                            required>
+                            <span class="text-xs text-gray-500">(Allowed: .xml, Max: 16MB)</span></label>
+                        <input type="file" id="xmlUpload" name="xmlUpload" accept=".xml" required
+                            class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent-hover">
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -241,59 +231,52 @@
                 </form>
 
                 <script>
+                    // Javascript remains the same as before
                     const form = document.getElementById("gapfillForm");
                     const submitButton = document.getElementById("submitButton");
                     const statusDiv = document.getElementById("uploadStatus");
+                    const fileInput = document.getElementById("xmlUpload");
 
                     form.addEventListener("submit", async (e) => {
-                        e.preventDefault(); // Prevent default browser form submission
-                        statusDiv.innerHTML = ""; // Clear previous status messages
+                        e.preventDefault();
+
+                        statusDiv.innerHTML = `<div class="status-message status-loading">Uploading...</div>`;
                         submitButton.disabled = true;
                         submitButton.textContent = "Uploading…";
 
+                        const maxFileSize = 16 * 1024 * 1024;
+                        if (fileInput.files.length > 0 && fileInput.files[0].size > maxFileSize) {
+                            statusDiv.innerHTML = `<div class="status-message status-error"><strong>Upload Failed:</strong> File size exceeds the 16MB limit.</div>`;
+                            submitButton.disabled = false;
+                            submitButton.textContent = "Upload Model";
+                            form.reset();
+                            return;
+                        }
+
                         const formData = new FormData(form);
-                        // Use url_for to get the correct API endpoint dynamically
                         const apiUrl = "{{ url_for('api_create_model') }}";
 
                         try {
-                            const response = await fetch(apiUrl, {
-                                method: "POST",
-                                body: formData,
-                                // Headers like 'Content-Type: multipart/form-data' are set automatically by fetch with FormData
-                            });
-
-                            // Try to parse JSON regardless of status code for error messages
+                            const response = await fetch(apiUrl, { method: "POST", body: formData });
                             const jsonResponse = await response.json();
 
                             if (!response.ok) {
-                                // Use error message from API if available, otherwise use status text
-                                const errorMsg = jsonResponse.error || `HTTP Error ${response.status}: ${response.statusText}`;
+                                const errorMsg = jsonResponse.error || `Server Error ${response.status}. Check logs.`;
                                 throw new Error(errorMsg);
                             }
 
-                            // --- Success ---
                             statusDiv.innerHTML = `
-                                <div class="p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+                                <div class="status-message status-success">
                                     <strong>Upload Successful!</strong><br>
-                                    ID: ${jsonResponse.id}, File: ${jsonResponse.file_name}<br>
-                                    <a href="${jsonResponse.file_link}" target="_blank" rel="noopener noreferrer" class="underline">Download Link</a>
+                                    Model ID: ${jsonResponse.id}, File: ${jsonResponse.file_name}<br>
+                                    Page will reload shortly.
                                 </div>`;
-                            form.reset(); // Clear form fields
-
-                            // Optionally reload the page after a short delay to see the new entry
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1500); // Reload after 1.5 seconds
+                            form.reset();
+                            setTimeout(() => { window.location.reload(); }, 2500);
 
                         } catch (error) {
-                            // --- Failure ---
                             console.error("Upload failed:", error);
-                            statusDiv.innerHTML = `
-                                <div class="p-4 bg-error-bg border border-error-border text-error-text rounded-md">
-                                    <strong>Upload Failed:</strong> ${error.message}
-                                </div>`;
-                        } finally {
-                            // --- Always re-enable button ---
+                            statusDiv.innerHTML = `<div class="status-message status-error"><strong>Upload Failed:</strong> ${error.message}</div>`;
                             submitButton.disabled = false;
                             submitButton.textContent = "Upload Model";
                         }
