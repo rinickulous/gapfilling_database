@@ -2,294 +2,455 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Integrated Genome-Scale Metabolic Database</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        primary: '#1E293B', // Slate 800
-                        accent: '#0D9488',  // Teal 600
-                        'accent-hover': '#0F766E', // Teal 700
-                        'error-bg': '#FECACA', // Red 200
-                        'error-text': '#991B1B', // Red 800
-                        'error-border': '#F87171', // Red 400
-                        'success-bg': '#D1FAE5', // Green 100
-                        'success-text': '#065F46', // Green 800
-                        'success-border': '#6EE7B7', // Green 300
-                    }
-                }
-            }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Integrated Genome-Scale Metabolic Database</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            primary: '#1E293B', // Slate 800
+            accent: '#0D9488',  // Teal 600
+            'accent-hover': '#0F766E', // Teal 700
+            'error-bg': '#FECACA', // Red 200
+            'error-text': '#991B1B', // Red 800
+            'error-border': '#F87171', // Red 400
+            'success-bg': '#D1FAE5', // Green 100
+            'success-text': '#065F46', // Green 800
+            'success-border': '#6EE7B7', // Green 300
+          }
         }
-    </script>
-    <style>
-        /* Style for table horizontal scroll */
-        .table-container {
-            max-width: 100%;
-            /* Takes width of parent */
-            overflow-x: scroll;
-            /* ALWAYS SHOW HORIZONTAL SCROLLBAR */
-            -webkit-overflow-scrolling: touch;
-            /* Smooth scrolling on iOS */
-            /* Add a minimum height to ensure scrollbar space is visible */
-            min-height: 100px;
-            /* Adjust as needed */
-            /* Optional: Add some padding at the bottom for scrollbar space */
-            padding-bottom: 15px;
-        }
+      }
+    }
+  </script>
+  <style>
+    .table-container {
+      max-width: 100%;
+      overflow-x: scroll;
+      /* Keep scrollbar always visible */
+      -webkit-overflow-scrolling: touch;
+      /* Smooth scrolling on iOS */
+      min-height: 100px;
+      /* Ensure container has some height */
+      padding-bottom: 15px;
+      /* Space for scrollbar */
+      /* border: 1px dashed green; /* For debugging */
+      */
+    }
 
-        /* Status message styling */
-        .status-message {
-            padding: 1rem;
-            border-radius: 0.375rem;
-            border-width: 1px;
-            margin-bottom: 1rem;
-        }
+    table {
+      /* border: 1px dashed blue; /* For debugging */
+      */ width: 100%;
+      /* Ensure table tries to use width */
+      min-width: max-content;
+      /* Force table wider than container if needed */
+    }
 
-        .status-success {
-            background-color: theme('colors.success-bg');
-            border-color: theme('colors.success-border');
-            color: theme('colors.success-text');
-        }
+    /* Make table cells wrap slightly better if needed, but prioritize nowrap */
+    td {
+      /* word-break: break-all; /* Can make links wrap aggressively */
+      */
+    }
 
-        .status-error {
-            background-color: theme('colors.error-bg');
-            border-color: theme('colors.error-border');
-            color: theme('colors.error-text');
-        }
+    /* Status message styling */
+    .status-message {
+      padding: 1rem;
+      border-radius: 0.375rem;
+      border-width: 1px;
+      margin-bottom: 1rem;
+    }
 
-        .status-loading {
-            background-color: #E0E7FF;
-            border-color: #A5B4FC;
-            color: #3730A3;
-        }
-    </style>
+    .status-success {
+      background-color: theme('colors.success-bg');
+      border-color: theme('colors.success-border');
+      color: theme('colors.success-text');
+    }
+
+    .status-error {
+      background-color: theme('colors.error-bg');
+      border-color: theme('colors.error-border');
+      color: theme('colors.error-text');
+    }
+
+    .status-loading {
+      background-color: #E0E7FF;
+      border-color: #A5B4FC;
+      color: #3730A3;
+    }
+
+    /* File Input Styling */
+    input[type="file"] {
+      font-size: 0.875rem;
+      /* text-sm */
+    }
+
+    input[type="file"]::file-selector-button {
+      margin-right: 1rem;
+      /* file:mr-4 */
+      padding: 0.5rem 1rem;
+      /* file:py-2 file:px-4 */
+      border-radius: 0.375rem;
+      /* file:rounded-md */
+      border-width: 0px;
+      /* file:border-0 */
+      font-size: 0.875rem;
+      /* file:text-sm */
+      font-weight: 600;
+      /* file:font-semibold */
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    /* Style for the main required file input button */
+    input[type="file"]#modelUpload::file-selector-button {
+      background-color: theme('colors.accent');
+      color: theme('colors.white');
+    }
+
+    input[type="file"]#modelUpload:hover::file-selector-button {
+      background-color: theme('colors.accent-hover');
+    }
+
+    /* Style for optional file input buttons */
+    input[type="file"]:not(#modelUpload)::file-selector-button {
+      background-color: theme('colors.gray.100');
+      color: theme('colors.gray.700');
+    }
+
+    input[type="file"]:not(#modelUpload):hover::file-selector-button {
+      background-color: theme('colors.gray.200');
+    }
+  </style>
 </head>
 
 <body class="bg-slate-50 text-slate-800 font-sans flex flex-col min-h-screen">
-    <header class="bg-primary text-white py-8 shadow">
-        <div class="container mx-auto text-center px-4">
-            <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Integrated Genome-Scale Metabolic Database</h1>
+  <header class="bg-primary text-white py-8 shadow">
+    <div class="container mx-auto text-center px-4">
+      <h1 class="text-3xl md:text-4xl font-bold tracking-tight">Integrated Genome-Scale Metabolic Database</h1>
+    </div>
+  </header>
+
+  <main class="flex-grow">
+    <section class="py-12 md:py-16">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+
+        <form action="{{ url_for('search') }}" method="post" class="max-w-xl mx-auto mb-12">
+          <label for="media_search" class="block text-sm font-medium text-gray-700 mb-1">Search models by media</label>
+          <div class="flex items-center">
+            <input type="text" name="media_search" id="media_search" value="{{ media_search or '' }}"
+              placeholder="e.g., xylitol, acetate, AKGDSH"
+              class="flex-grow p-3 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent">
+            <button type="submit"
+              class="bg-accent text-white py-3 px-5 rounded-r-md hover:bg-accent-hover transition font-medium border border-accent">
+              Search
+            </button>
+          </div>
+        </form>
+
+        <p class="text-lg max-w-3xl mx-auto text-center text-gray-600 mb-12">
+          A unified platform for gap-filling, flux balance analysis (FBA), and version control of genome-scale metabolic
+          models, developed by the Daniels Segrè Lab for internal research. Search models by carbon source or upload
+          files to explore metabolic reactions and annotations. Supported formats: XML, TSV.
+        </p>
+
+        {% if error_message %}
+        <div class="max-w-4xl mx-auto mb-8 status-message status-error" role="alert">
+          <p class="font-bold">Error Displaying Models</p>
+          <p>{{ error_message }}</p>
         </div>
-    </header>
+        {% endif %}
 
-    <main class="flex-grow">
-        <section class="py-12 md:py-16">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl md:text-3xl font-bold text-center mt-12 mb-8 text-slate-900">
+          {% if media_search is not none %}
+          Results for “{{ media_search }}”
+          {% else %}
+          Available Models (Latest 5)
+          {% endif %}
+        </h2>
 
-                <form action="{{ url_for('search') }}" method="post" class="max-w-xl mx-auto mb-12">
-                    <label for="media_search" class="block text-sm font-medium text-gray-700 mb-1">Search Models by
-                        Media</label>
-                    <div class="flex items-center">
-                        <input type="text" name="media_search" id="media_search" value="{{ media_search or '' }}"
-                            placeholder="e.g., succinate, glucose"
-                            class="flex-grow p-3 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent">
-                        <button type="submit"
-                            class="bg-accent text-white py-3 px-5 rounded-r-md hover:bg-accent-hover transition font-medium border border-accent">
-                            Search
-                        </button>
-                    </div>
-                </form>
-
-                <p class="text-lg max-w-3xl mx-auto text-center text-gray-600 mb-12">
-                    A unified platform for genome-scale metabolic models. Search models or upload new XMLs below.
-                </p>
-
-                {% if error_message %}
-                <div class="max-w-4xl mx-auto mb-8 status-message status-error" role="alert">
-                    <p class="font-bold">Error</p>
-                    <p>{{ error_message }}</p>
-                </div>
-                {% endif %}
-
-                <h2 class="text-2xl md:text-3xl font-bold text-center mt-12 mb-8 text-slate-900">
-                    {% if media_search is not none %}
-                    Results for “{{ media_search }}”
-                    {% elif media_search is none %}
-                    Available Models (Latest First)
+        {# Check if there are results OR if it's the initial page load (media_search is None) #}
+        {# This structure ensures the table container is always present if needed #}
+        <div class="mx-auto mb-20">
+          <div class="table-container shadow border-b border-gray-200 sm:rounded-lg">
+            {% if search_results %} {# Only render table if there are results #}
+            <table class="min-w-full divide-y divide-gray-200 text-center">
+              <thead class="bg-gray-100">
+                <tr>
+                  {# Use the keys from the first result to generate headers #}
+                  {% if search_results[0] %}
+                  {% for col in search_results[0].keys() %}
+                  {# Skip file_name and Biomass_RCH1 headers #}
+                  {% if col != 'file_name' and col != 'Biomass_RCH1' %}
+                  <th
+                    class="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wide text-center whitespace-nowrap">
+                    {# Custom header titles - Adjust as needed based on actual DB columns #}
+                    {% if col.lower() == 'id' %} Genome Model ID
+                    {% elif col.lower() == 'growth_data' %} Growth Result
+                    {% elif col.lower() == 'file_link' %} Model File {# Represents XML or TSV main file #}
+                    {% elif col.lower() == 'growth_file' %} Growth File (TSV)
+                    {% elif col.lower() == 'biomass_file_5mm' %} Biomass 5mM (TSV)
+                    {% elif col.lower() == 'biomass_file_20mm' %} Biomass 20mM (TSV)
+                    {% else %} {{ col.replace('_', ' ').title() }}
                     {% endif %}
-                </h2>
+                  </th>
+                  {% endif %}
+                  {% endfor %}
+                  {% else %}
+                  <th class="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wide text-center">Data
+                  </th>
+                  {% endif %}
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200 text-base text-slate-800">
+                {% for row in search_results %}
+                <tr>
+                  {# --- Define list of keys that contain file paths --- #}
+                  {% set file_keys = ['file_link', 'growth_file', 'biomass_file_5mM', 'biomass_file_20mM'] %} {# Removed
+                  Biomass_RCH1 #}
 
-                {% if search_results %}
-                <div class="mx-auto mb-12">
-                    <div class="table-container shadow border-b border-gray-200 sm:rounded-lg">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    {% if search_results[0] %}
-                                    {% for col in search_results[0].keys() %}
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                        {{ col.replace('_',' ')|title }}
-                                    </th>
-                                    {% endfor %}
-                                    {% else %}
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                        Data</th>
-                                    {% endif %}
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                {% for row in search_results %}
-                                <tr>
-                                    {% for key, val in row.items() %}
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800"
-                                        data-label="{{ key.replace('_',' ')|title }}">
-                                        {# Link rendering logic - Stays the same #}
-                                        {% if key == 'file_link' and val %}
-                                        <a href="{{ val }}" target="_blank" rel="noopener noreferrer"
-                                            class="text-accent underline hover:text-accent-hover break-all">
-                                            {{ row.get('file_name', 'Download') }}
-                                        </a>
-                                        {% elif key == 'file_name' %}
-                                        {{ val }}
-                                        {% elif val is none or val == '' %}
-                                        <span class="text-gray-400">N/A</span>
-                                        {% else %}
-                                        {{ val }}
-                                        {% endif %}
-                                    </td>
-                                    {% endfor %}
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                {% elif media_search is not none %}
-                <p class="text-center text-gray-600 mt-8">No models found matching “{{ media_search }}”.</p>
-                {% else %}
-                <p class="text-center text-gray-600 mt-8">No models currently in the database. Use the form below to
-                    upload one.</p>
-                {% endif %}
+                  {% for key, val in row.items() %}
+                  {# Skip file_name and Biomass_RCH1 column data cell entirely #}
+                  {% if key != 'file_name' and key != 'Biomass_RCH1' %}
+                  <td class="px-6 py-4 whitespace-nowrap text-center"> {# Keep nowrap for standard cells #}
+
+                    {# Check if the key is one we want to potentially link and if there's a value #}
+                    {% if key in file_keys and val %}
+                    {# Generate the link using url_for, passing the relative path from DB ('val') #}
+                    <a href="{{ url_for('download', filepath=val) }}" target="_blank" rel="noopener noreferrer"
+                      class="text-accent underline hover:text-accent-hover break-all"> {# break-all helps if filename is
+                      long #}
+                      {# Determine link text #}
+                      {% if key == 'file_link' %}
+                      {# Use file_name column for main file's link text, fallback to parsing path #}
+                      {{ row.get('file_name', val.split('/')[-1] if '/' in val else val ) }}
+                      {% else %}
+                      {# For other files, show filename part of path #}
+                      {{ val.split('/')[-1] if '/' in val else val }}
+                      {% endif %}
+                    </a>
+                    {# Display other non-file data (handle N/A, exclude already linked keys) #}
+                    {% elif key not in file_keys %}
+                    {{ 'N/A' if val is none else val }}
+                    {# Handle cases where a file key exists but value is None/empty #}
+                    {% elif key in file_keys and not val %}
+                    N/A
+                    {% endif %}
+
+                  </td>
+                  {% endif %} {# End skip file_name/Biomass_RCH1 column #}
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% elif media_search is not none %} {# Message only shows if search was done AND no results #}
+            <p class="text-center text-gray-600 p-8">No models found matching “{{ media_search }}”.</p>
+            {% else %} {# Message if initial load (media_search is None) has no results #}
+            <p class="text-center text-gray-600 p-8">No models available yet. Use the form below to upload one.</p>
+            {% endif %}
+          </div> {# End table-container #}
+        </div> {# End results outer div #}
 
 
-                <h2 class="text-2xl md:text-3xl font-bold text-center mt-16 mb-8 text-slate-900">
-                    Upload New Model
-                </h2>
-                <div id="uploadStatus" class="max-w-xl mx-auto mb-4 text-center" role="alert"></div>
+        <h2 class="text-2xl md:text-3xl font-bold text-center mt-16 mb-8 text-slate-900">Upload New Model File</h2>
+        <div id="uploadStatus" class="max-w-xl mx-auto mb-4 text-center" role="alert"></div>
 
-                <form id="gapfillForm" enctype="multipart/form-data"
-                    class="max-w-xl mx-auto mb-12 bg-white p-6 md:p-8 rounded-lg shadow-md space-y-6 border border-gray-200">
-                    <div>
-                        <label for="xmlUpload" class="block text-sm font-medium text-gray-700 mb-1">Choose XML file *
-                            <span class="text-xs text-gray-500">(Allowed: .xml, Max: 16MB)</span></label>
-                        <input type="file" id="xmlUpload" name="xmlUpload" accept=".xml" required
-                            class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent-hover">
-                    </div>
+        <form id="gapfillForm" enctype="multipart/form-data"
+          class="max-w-xl mx-auto mb-12 bg-white p-6 md:p-8 rounded-lg shadow-md space-y-6 border border-gray-200">
+          {# === Main Model File Input === #}
+          <div>
+            <label for="modelUpload" class="block text-sm font-medium text-gray-700 mb-1">Choose Main Model File *
+              <span class="text-xs text-gray-500">(Allowed: .xml, .tsv, Max: 16MB)</span></label>
+            <input type="file" id="modelUpload" name="modelUpload" accept=".xml,.tsv" required {# Main file is required
+              #}
+              class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent">
+          </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <div>
-                            <label for="growth_media" class="block text-sm font-medium text-gray-700">Growth Media
-                                *</label>
-                            <input type="text" id="growth_media" name="growth_media" required
-                                placeholder="e.g., Glucose Minimal Media"
-                                class="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-accent focus:border-accent">
-                        </div>
-                        <div>
-                            <label for="gapfill_algorithm" class="block text-sm font-medium text-gray-700">Gap-fill
-                                Algorithm *</label>
-                            <input type="text" id="gapfill_algorithm" name="gapfill_algorithm" value="Model SEED"
-                                required
-                                class="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-accent focus:border-accent">
-                        </div>
-                        <div>
-                            <label for="annotation_tool" class="block text-sm font-medium text-gray-700">Annotation Tool
-                                *</label>
-                            <input type="text" id="annotation_tool" name="annotation_tool" value="RASTtk" required
-                                class="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-accent focus:border-accent">
-                        </div>
-                        <div>
-                            <label for="biomass_type" class="block text-sm font-medium text-gray-700">Biomass Type
-                                *</label>
-                            <input type="text" id="biomass_type" name="biomass_type" value="biomass_unknown" required
-                                class="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-accent focus:border-accent">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label for="growth_yes_or_no" class="block text-sm font-medium text-gray-700">Predicted
-                                Growth? *</label>
-                            <select id="growth_yes_or_no" name="growth_yes_or_no" required
-                                class="mt-1 block w-full p-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-accent focus:border-accent sm:text-sm">
-                                <option value="Yes" selected>Yes</option>
-                                <option value="No">No</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button type="submit" id="submitButton"
-                        class="w-full bg-accent text-white py-3 px-4 rounded-md hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                        Upload Model
-                    </button>
-                </form>
-
-                <script>
-                    // Javascript remains the same as before
-                    const form = document.getElementById("gapfillForm");
-                    const submitButton = document.getElementById("submitButton");
-                    const statusDiv = document.getElementById("uploadStatus");
-                    const fileInput = document.getElementById("xmlUpload");
-
-                    form.addEventListener("submit", async (e) => {
-                        e.preventDefault();
-
-                        statusDiv.innerHTML = `<div class="status-message status-loading">Uploading...</div>`;
-                        submitButton.disabled = true;
-                        submitButton.textContent = "Uploading…";
-
-                        const maxFileSize = 16 * 1024 * 1024;
-                        if (fileInput.files.length > 0 && fileInput.files[0].size > maxFileSize) {
-                            statusDiv.innerHTML = `<div class="status-message status-error"><strong>Upload Failed:</strong> File size exceeds the 16MB limit.</div>`;
-                            submitButton.disabled = false;
-                            submitButton.textContent = "Upload Model";
-                            form.reset();
-                            return;
-                        }
-
-                        const formData = new FormData(form);
-                        const apiUrl = "{{ url_for('api_create_model') }}";
-
-                        try {
-                            const response = await fetch(apiUrl, { method: "POST", body: formData });
-                            const jsonResponse = await response.json();
-
-                            if (!response.ok) {
-                                const errorMsg = jsonResponse.error || `Server Error ${response.status}. Check logs.`;
-                                throw new Error(errorMsg);
-                            }
-
-                            statusDiv.innerHTML = `
-                                <div class="status-message status-success">
-                                    <strong>Upload Successful!</strong><br>
-                                    Model ID: ${jsonResponse.id}, File: ${jsonResponse.file_name}<br>
-                                    Page will reload shortly.
-                                </div>`;
-                            form.reset();
-                            setTimeout(() => { window.location.reload(); }, 2500);
-
-                        } catch (error) {
-                            console.error("Upload failed:", error);
-                            statusDiv.innerHTML = `<div class="status-message status-error"><strong>Upload Failed:</strong> ${error.message}</div>`;
-                            submitButton.disabled = false;
-                            submitButton.textContent = "Upload Model";
-                        }
-                    });
-                </script>
-
+          {# === Optional TSV File Inputs === #}
+          <fieldset class="border-t border-gray-200 pt-6">
+            <legend class="text-base font-medium text-gray-900 mb-2">Optional Associated TSV Files</legend>
+            <div class="space-y-4">
+              <div>
+                <label for="growth_file_upload" class="block text-sm font-medium text-gray-700 mb-1">Growth File (TSV)
+                  <span class="text-xs text-gray-500">(Optional)</span></label>
+                <input type="file" id="growth_file_upload" name="growth_file_upload" accept=".tsv"
+                  class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent">
+              </div>
+              <div>
+                <label for="biomass_5mM_upload" class="block text-sm font-medium text-gray-700 mb-1">Biomass 5mM File
+                  (TSV)
+                  <span class="text-xs text-gray-500">(Optional)</span></label>
+                <input type="file" id="biomass_5mM_upload" name="biomass_5mM_upload" accept=".tsv"
+                  class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent">
+              </div>
+              <div>
+                <label for="biomass_20mM_upload" class="block text-sm font-medium text-gray-700 mb-1">Biomass 20mM File
+                  (TSV)
+                  <span class="text-xs text-gray-500">(Optional)</span></label>
+                <input type="file" id="biomass_20mM_upload" name="biomass_20mM_upload" accept=".tsv"
+                  class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent">
+              </div>
             </div>
-        </section>
-    </main>
+          </fieldset>
 
-    <footer class="bg-primary text-white py-8 mt-12 text-sm">
-        <div class="container mx-auto text-center px-4 text-slate-300">
-            <p>© {{ current_year }} Segrè Lab, Boston University. All rights reserved.</p>
+          {# === Other Metadata Inputs === #}
+          <fieldset class="border-t border-gray-200 pt-6">
+            <legend class="text-base font-medium text-gray-900 mb-2">Metadata (Optional)</legend>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              <div>
+                <label for="growth_media" class="block text-sm font-medium text-gray-700">Growth Media</label>
+                <input type="text" id="growth_media" name="growth_media" placeholder="e.g., Glucose Minimal Media"
+                  class="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-accent focus:border-accent">
+              </div>
+              <div>
+                <label for="gapfill_algorithm" class="block text-sm font-medium text-gray-700">Gap-fill
+                  Algorithm</label>
+                <input type="text" id="gapfill_algorithm" name="gapfill_algorithm" value="Model SEED"
+                  class="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-accent focus:border-accent">
+              </div>
+              <div>
+                <label for="annotation_tool" class="block text-sm font-medium text-gray-700">Annotation Tool</label>
+                <input type="text" id="annotation_tool" name="annotation_tool" value="RASTtk"
+                  class="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-accent focus:border-accent">
+              </div>
+              <div>
+                <label for="growth_data" class="block text-sm font-medium text-gray-700">Growth Data</label>
+                <input type="text" id="growth_data" name="growth_data" placeholder="e.g., Growth, No Growth"
+                  class="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-accent focus:border-accent">
+              </div>
+            </div>
+          </fieldset>
+
+          <button type="submit" id="submitButton"
+            class="w-full bg-accent text-white py-3 px-4 rounded-md hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            Upload Model
+          </button>
+        </form>
+
+        <script>
+          const form = document.getElementById("gapfillForm");
+          const submitButton = document.getElementById("submitButton");
+          const statusDiv = document.getElementById("uploadStatus");
+          const fileInput = document.getElementById("modelUpload"); // Reference main file input
+
+          form.addEventListener("submit", async (e) => {
+            e.preventDefault(); // Prevent default form submission
+            statusDiv.innerHTML = `<div class="status-message status-loading">Uploading... Please wait.</div>`;
+            submitButton.disabled = true;
+            submitButton.textContent = "Uploading…";
+
+            // Check if main file is selected
+            if (!fileInput.files || fileInput.files.length === 0) {
+              statusDiv.innerHTML = `<div class="status-message status-error"><strong>Upload Failed:</strong> No main model file selected.</div>`;
+              submitButton.disabled = false;
+              submitButton.textContent = "Upload Model";
+              return; // Stop submission
+            }
+
+            // Check main file size
+            const maxFileSize = 16 * 1024 * 1024; // 16 MB
+            if (fileInput.files[0].size > maxFileSize) {
+              statusDiv.innerHTML = `<div class="status-message status-error"><strong>Upload Failed:</strong> Main file size exceeds the ${maxFileSize / 1024 / 1024}MB limit.</div>`;
+              submitButton.disabled = false;
+              submitButton.textContent = "Upload Model";
+              // Don't reset form here, allow user to correct
+              return; // Stop submission
+            }
+
+            const formData = new FormData(form); // Collects all form data including all files
+            const apiUrl = "{{ url_for('api_create_model') }}";
+
+            try {
+              const response = await fetch(apiUrl, {
+                method: "POST",
+                body: formData,
+              });
+
+              // Try to parse JSON response, critical for getting error messages from API
+              let jsonResponse;
+              const responseContentType = response.headers.get("content-type");
+              if (responseContentType && responseContentType.includes("application/json")) {
+                jsonResponse = await response.json();
+              } else {
+                // Handle non-JSON responses (like HTML error pages from server/proxy)
+                const textResponse = await response.text();
+                console.error("Received non-JSON response:", textResponse);
+                // Create a synthetic error object
+                jsonResponse = { error: `Server returned non-JSON response (Status: ${response.status}). Check console/network tab for details.` };
+                // Force failure if response was not ok, even if json parse didn't fail initially
+                if (!response.ok) {
+                  throw new Error(jsonResponse.error);
+                }
+              }
+
+              if (!response.ok) {
+                // Use error from parsed/synthetic JSON response if available
+                const errorMsg = jsonResponse.error || `Request failed with status ${response.status}: ${response.statusText}`;
+                throw new Error(errorMsg);
+              }
+
+              // --- Success ---
+              statusDiv.innerHTML = `
+                <div class="status-message status-success">
+                  <strong>Upload Successful!</strong><br>
+                  Model ID: ${jsonResponse.id || 'N/A'}, File: ${jsonResponse.file_name || 'N/A'}<br>
+                  Page will reload shortly.
+                </div>`;
+              form.reset(); // Clear the form on success
+              setTimeout(() => { window.location.reload(); }, 2500); // Reload page
+
+            } catch (error) {
+              // --- Failure ---
+              console.error("Upload fetch/processing failed:", error);
+              statusDiv.innerHTML = `<div class="status-message status-error"><strong>Upload Failed:</strong> ${error.message}</div>`;
+              // Re-enable button on failure
+              submitButton.disabled = false;
+              submitButton.textContent = "Upload Model";
+            }
+          });
+        </script>
+        <h2 class="text-3xl font-semibold text-center mt-20 mb-12 text-slate-900">Key Features</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
+          <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+            <h3 class="text-xl font-semibold mb-2 text-accent">Gap-Filling</h3>
+            <p>Integrate missing reactions and metabolites using KBase, KEGG, BiGG, and other curated biochemical
+              databases.</p>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+            <h3 class="text-xl font-semibold mb-2 text-accent">Flux Balance Analysis</h3>
+            <p>Visualize growth and reaction flux using COMETS simulations and flux balance analysis (FBA) techniques.
+            </p>
+          </div>
+          <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
+            <h3 class="text-xl font-semibold mb-2 text-accent">Version Control</h3>
+            <p>Track model iterations and support reproducible research with built-in version tracking and
+              documentation.</p>
+          </div>
         </div>
-    </footer>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-primary text-white py-12 mt-20">
+    <div class="container mx-auto text-center px-4 text-sm">
+      <p class="mb-4">
+        Developed by Benjamin Pfeiffer, Nicholas White, Nicolas Petrunich, Aravind Panicker, and Vassanth Mathan under
+        the supervision of Dr. Ilija Dukovski. Internal use only.
+        Contact: <a href="mailto:dukovski@bu.edu" class="text-teal-300 hover:underline">dukovski@bu.edu</a>
+      </p>
+      <p class="mb-2">
+        Linked Databases:
+        <a href="https://www.kegg.jp/" class="text-teal-300 hover:underline">KEGG</a> |
+        <a href="http://bigg.ucsd.edu/" class="text-teal-300 hover:underline">BiGG</a> |
+        <a href="https://www.metacyc.org/" class="text-teal-300 hover:underline">MetaCyc</a>
+      </p>
+      <p>© {{ current_year }} Segrè Lab, Boston University. All rights reserved.</p>
+    </div>
+  </footer>
 </body>
 
 </html>
